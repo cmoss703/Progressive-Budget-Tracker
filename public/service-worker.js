@@ -1,31 +1,27 @@
-const FILES_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/favorites.html',
-  '/topic.html',
-  '/assets/css/style.css',
-  '/dist/app.bundle.js',
-  '/dist/favorites.bundle.js',
-  '/dist/topic.bundle.js',
-  'https://fonts.googleapis.com/css?family=Istok+Web|Montserrat:800&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css',
-];
+const STATIC_CACHE = 'static-cache-v1';
+const DATA_CACHE = 'data-cache-v1';
 
-const PRECACHE = 'precache-v1';
-const RUNTIME = 'runtime';
-
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches
-      .open(PRECACHE)
-      .then((cache) => cache.addAll(FILES_TO_CACHE))
-      .then(self.skipWaiting())
+    caches.open(STATIC_CACHE).then( cache => {
+      return cache.addAll([
+        '/',
+        '/index.html',
+        '/index.js',
+        '/styles.css',
+        '/manifest.webmanifest',
+        '/icons/icon-192x192.png',
+        '/icons/icon-512x512.png',
+      ]);
+    })
   );
+  console.log('Install');
+  self.skipWaiting();
 });
 
 // The activate handler takes care of cleaning up old caches.
 self.addEventListener('activate', (event) => {
-  const currentCaches = [PRECACHE, RUNTIME];
+  const currentCaches = [STATIC_CACHE, DATA_CACHE];
   event.waitUntil(
     caches
       .keys()
@@ -51,7 +47,7 @@ self.addEventListener('fetch', (event) => {
           return cachedResponse;
         }
 
-        return caches.open(RUNTIME).then((cache) => {
+        return caches.open(DATA_CACHE).then((cache) => {
           return fetch(event.request).then((response) => {
             return cache.put(event.request, response.clone()).then(() => {
               return response;
@@ -62,3 +58,5 @@ self.addEventListener('fetch', (event) => {
     );
   }
 });
+
+
